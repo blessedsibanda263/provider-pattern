@@ -1,9 +1,25 @@
-import { createContext, memo, useContext, useState } from "react";
+import { memo, useCallback, useState } from "react";
+import { createContext, useContextSelector } from "use-context-selector";
 
 const DarkModeContext = createContext({});
 
+function useDarkMode(selector) {
+  return useContextSelector(DarkModeContext, selector);
+}
+
+function DarkModeProvider({ children }) {
+  const [isDarkMode, setDarkMode] = useState(false);
+  const toggle = useCallback(() => setDarkMode((v) => !v), []);
+  const contextValue = { isDarkMode, toggle };
+  return (
+    <DarkModeContext.Provider value={contextValue}>
+      {children}
+    </DarkModeContext.Provider>
+  );
+}
+
 function Button({ children, ...rest }) {
-  const { isDarkMode } = useDarkMode();
+  const isDarkMode = useDarkMode((ctx) => ctx.isDarkMode);
   return (
     <button
       style={{
@@ -19,8 +35,8 @@ function Button({ children, ...rest }) {
 }
 
 function ToggleButton() {
-  const { toggleDarkMode } = useDarkMode();
-  return <Button onClick={toggleDarkMode}>Toggle mode</Button>;
+  const toggle = useDarkMode((ctx) => ctx.toggle);
+  return <Button onClick={toggle}>Toggle mode</Button>;
 }
 
 const Header = memo(function Header() {
@@ -43,12 +59,8 @@ const Header = memo(function Header() {
   );
 });
 
-function useDarkMode() {
-  return useContext(DarkModeContext);
-}
-
 function Main() {
-  const { isDarkMode } = useDarkMode();
+  const isDarkMode = useDarkMode((ctx) => ctx.isDarkMode);
   return (
     <main
       style={{
@@ -62,17 +74,6 @@ function Main() {
       <Header />
       <h1>Welcome to our business site!</h1>
     </main>
-  );
-}
-
-function DarkModeProvider({ children }) {
-  const [isDarkMode, setDarkMode] = useState(false);
-  const toggleDarkMode = () => setDarkMode((v) => !v);
-  const contextValue = { isDarkMode, toggleDarkMode };
-  return (
-    <DarkModeContext.Provider value={contextValue}>
-      {children}
-    </DarkModeContext.Provider>
   );
 }
 
