@@ -3,7 +3,7 @@ import { createContext, memo, useContext, useState } from "react";
 const DarkModeContext = createContext({});
 
 function Button({ children, ...rest }) {
-  const { isDarkMode } = useContext(DarkModeContext);
+  const { isDarkMode } = useDarkMode();
   return (
     <button
       style={{
@@ -19,7 +19,7 @@ function Button({ children, ...rest }) {
 }
 
 function ToggleButton() {
-  const { toggleDarkMode } = useContext(DarkModeContext);
+  const { toggleDarkMode } = useDarkMode();
   return <Button onClick={toggleDarkMode}>Toggle mode</Button>;
 }
 
@@ -43,8 +43,12 @@ const Header = memo(function Header() {
   );
 });
 
-const Main = memo(function Main() {
-  const { isDarkMode } = useContext(DarkModeContext);
+function useDarkMode() {
+  return useContext(DarkModeContext);
+}
+
+function Main() {
+  const { isDarkMode } = useDarkMode();
   return (
     <main
       style={{
@@ -59,16 +63,24 @@ const Main = memo(function Main() {
       <h1>Welcome to our business site!</h1>
     </main>
   );
-});
+}
 
-function App() {
+function DarkModeProvider({ children }) {
   const [isDarkMode, setDarkMode] = useState(false);
   const toggleDarkMode = () => setDarkMode((v) => !v);
   const contextValue = { isDarkMode, toggleDarkMode };
   return (
     <DarkModeContext.Provider value={contextValue}>
-      <Main />
+      {children}
     </DarkModeContext.Provider>
+  );
+}
+
+function App() {
+  return (
+    <DarkModeProvider>
+      <Main />
+    </DarkModeProvider>
   );
 }
 
